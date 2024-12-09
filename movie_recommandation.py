@@ -7,9 +7,17 @@ import requests
 
 with open('movie.pkl', 'rb') as movie_file:
     movie_data = pkl.load(movie_file)
-    
-with open('vectors.pkl', 'rb') as vector_file:
-    vector_data = pkl.load(vector_file)
+
+file_url = 'https://github.com/surajgupta0/movie-recommandation-sytem/releases/download/v0.2.0-alpha/vectors.pkl'
+
+# Download and load the file
+response = requests.get(file_url, stream=True)
+
+if response.status_code == 200:
+    vector_data = pkl.loads(response.content)
+    print("File loaded successfully!")
+else:
+    print("Failed to download the file.")
 
 movie_data = pd.DataFrame(movie_data)
 vector_data = np.array(vector_data)
@@ -59,6 +67,3 @@ if st.button('Recommend'):
             st.markdown(f"<h6>{movie_title}</h6>", unsafe_allow_html=True)
         count += 1
         
-        
-
-

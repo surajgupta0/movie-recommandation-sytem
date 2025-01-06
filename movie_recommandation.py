@@ -2,35 +2,28 @@ import pickle as pkl
 import numpy as np
 import pandas as pd
 import streamlit as st
-from sklearn.metrics.pairwise import cosine_similarity
+from pinecone import Pinecone
 import requests
 
 with open('movie.pkl', 'rb') as movie_file:
     movie_data = pkl.load(movie_file)
 
-file_url = 'https://github.com/surajgupta0/movie-recommandation-sytem/releases/download/v0.2.0-alpha/vectors.pkl'
-
-# Download and load the file
-response = requests.get(file_url, stream=True)
-
-if response.status_code == 200:
-    vector_data = pkl.loads(response.content)
-    print("File loaded successfully!")
-else:
-    print("Failed to download the file.")
 
 movie_data = pd.DataFrame(movie_data)
-vector_data = np.array(vector_data)
+
+pc = Pinecone(api_key="pcsk_28BYaV_271pDGPxzVmbyU4io4GriUoX7sYjNseGoYH7iZpUjgcSHXBoxdNKi8CKwCLgLvi")
+
+index = pc.Index("movie-recommandation")
 
 def recommend_movie(title):
     Li = []
     
     movie_index = movie_data[movie_data['title'] == title].index[0]
-    distances = cosine_similarity(vector_data[movie_index].reshape(1, -1), vector_data)
-    movies_list = sorted(list(enumerate(distances[0])), reverse=True, key=lambda x: x[1])[1:10]
+    movies_list = index.query(id=str(movie_index), top_k=6).matches
+    
     count = 0
     for i in movies_list:
-        mv_id = movie_data.iloc[i[0]]['id']
+        mv_id = movie_data.iloc[int(i.id)]['id']
         url = f"https://api.themoviedb.org/3/movie/{mv_id}?api_key=d9c7af84b1594e65459170798ff20a2d"
         response = requests.get(url)
         data = response.json()
@@ -67,3 +60,6 @@ if st.button('Recommend'):
             st.markdown(f"<h6>{movie_title}</h6>", unsafe_allow_html=True)
         count += 1
         
+        
+
+

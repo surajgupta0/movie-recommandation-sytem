@@ -19,10 +19,10 @@ def recommend_movie(title):
     Li = []
     
     movie_index = movie_data[movie_data['title'] == title].index[0]
-    movies_list = index.query(id=str(movie_index), top_k=6).matches
+    movies_list = index.query(id=str(movie_index), top_k=10).matches
     
     count = 0
-    for i in movies_list:
+    for i in movies_list[1:]:
         mv_id = movie_data.iloc[int(i.id)]['id']
         url = f"https://api.themoviedb.org/3/movie/{mv_id}?api_key=d9c7af84b1594e65459170798ff20a2d"
         response = requests.get(url)
@@ -60,6 +60,3 @@ if st.button('Recommend'):
             st.markdown(f"<h6>{movie_title}</h6>", unsafe_allow_html=True)
         count += 1
         
-        
-
-
